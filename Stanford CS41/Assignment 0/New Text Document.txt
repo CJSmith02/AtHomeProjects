@@ -1,0 +1,3 @@
+source ~cs41-envbinactivate
+
+Assignment 0 stuff is on ubantu

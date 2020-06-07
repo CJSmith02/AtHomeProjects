@@ -7,7 +7,6 @@ Created on Mon May 11 21:57:26 2020
 import euchre_utils
 import collections
 import random
-import itertools
 import re
 
 CARD_VALUES_ORDER = ['9','10','J','Q','K','A']
@@ -54,15 +53,35 @@ class Player():
             for card in hand[suit]:
                 print("{} of {}".format(card,suit))
     
-    def input_card_from_hand(self):
-        print("Type which card you want:")
-        self.print_hand()
-        answer = input()
+    def select_card(self, options):
+        """ options is the list OR dictionary of lists (hand) from which a valid 
+        card can be drawn. This shows the player the options, asks them to type
+        the one they want, and tells them they can't have one they can't have"""
+        
+        answer = input("What card do you want to play?\n")
         value = re.match('9|10|J|Q|K|A|LB|RB', answer.upper())
         suit = re.match('diamonds|hearts|spades|clubs', answer.lower())
+        if value and suit: # if they exist
+            attempt = card(value.group(0), suit.group(0))
+            if type(options) == dict: #a hand
+                if value in options[suit]:
+                    return attempt
+                else:
+                    print("Try again. That card is not an option.")
+                    self.select_card(options)
+            elif type(options) == list:
+                if value in options:
+                    return attempt
+                else:
+                    print("Try again. That card is not in your hand.")
+                    self.select_card(options)
+            else:
+                raise TypeError("look in select_card. invalid options input type")
+        else:
+            print("Try again. You mistyped a card. Make sure to spell out" +
+                  "the suit, like 'k clubs'")
+            self.select_card(options) # yes it's recursion. it's ok though
         
-    def input_card_from_list(self, options):
-        print("Type which card you want")
     
 class Deck():
     
@@ -80,7 +99,7 @@ class Deck():
         return self.cards.pop()
     
     def deal(self, players):
-        num_cards_to_deal = itertools.cycle([3,2])
+        num_cards_to_deal = iter([3,2,3,2,2,3,2,3])
         for i in range(2): # go around twice
             for player in players: #at each player
                 for j in range(next(num_cards_to_deal)): #deal multiple cards
@@ -133,6 +152,13 @@ class Table():
     
     def clear_cards_on_table(self):
         self.cards_on_table.clear()
+        
+    def print_cards_on_table(self):
+        if self.cards_on_table: # if it's not empty
+            for card in self.cards_on_table:
+                print("{} of {}".format(card.value, card.suit))
+        else:
+            print("There are no cards on the table")
         
     def determine_trick_winner(self):
         """
@@ -193,18 +219,28 @@ class Table():
     def sequence_a_round(self):
         print('round' + self.round)
         #deal cards
-        print('dealer' + self.dealer)
+        print('dealer is: ' + self.dealer)
         self.deck.deal(self.players)
-        
+        [player.sort_hand() for player in self.players]
         #play hand
         for trick_num in range(5):
             for player in self.players:
+                #display what's availible
                 print(player.name + "'s turn.")
+                print("Cards on the table: \n")
+                self.print_cards_on_table()
                 print("Your Hand: \n")
                 player.print_hand()
                 
-        raise NotImplementedError
+                #they play a card
+                chosen_card = player.select_card(player.hand)
+                player.remove_card(chosen_card)
+                self.add_card(chosen_card)
                 
+                cls
+                input("Pass the computer to the next player. \n")
+            self.end_trick()
+        self.end_round()
         
 
 def main():
@@ -212,9 +248,9 @@ def main():
     
     print('Pass this computer around the circle in order of who goes')
     table = Table(names = [input("Player {} name:".format(i) for i in range(4))]) 
-    for loop
-    table.sequence_a_round
-        
+    while no one won
+    table.sequence_a_round()
+    raise NotImplementedError()        
 
 if __name__ == "__main__":
     main()
