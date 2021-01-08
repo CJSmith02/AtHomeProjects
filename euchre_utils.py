@@ -4,14 +4,20 @@ Created on Mon May 11 20:34:45 2020
 
 @author: Caleb Smith
 """
-import collections
+#import collections
+import os
+from play_euchre import Card #yes this is bad but it works for some reason
+import re
+from typing import List
 
-CARD = collections.namedtuple("CARD", ["value", "suit"])
+#CARD = collections.namedtuple("CARD", ["value", "suit"])
 HAND = {'clubs': [],'spades':[],'hearts':[],'diamonds':[]}
 CARD_VALUES_ORDER = ['9','10','J','Q','K','A']
 TRUMP_VALUES_ORDER = ['9','10','Q','K','A','LB','RB']
+SUITS = ['clubs','spades','hearts','diamonds']
 
-def get_card_color(card):
+
+def get_card_color(card: Card) -> str:
     if card.suit in ["hearts","diamonds"]:
         return "red"
     elif card.suit in ["clubs","spades"]:
@@ -19,15 +25,15 @@ def get_card_color(card):
     else:
         raise ValueError('suit is not valid')
         
-def get_left_bower(trump_suit):
+def get_left_bower(trump_suit: str) -> Card:
     """
     Given the suit that is trump, returns the equivelent left bower
     """
     left_bowers = {'hearts':'diamonds', 'diamonds':'hearts', 'spades':'clubs',
                    'clubs':'spades'}
-    return (CARD('J', left_bowers[trump_suit]))
+    return (Card('J', left_bowers[trump_suit]))
 
-def compare_cards(card1, card2, trump, suit_to_follow):
+def compare_cards(card1: Card, card2: Card, trump: str, suit_to_follow: str) -> Card:
     """
     input two cards and what suit is trump
     returns the higher card
@@ -57,9 +63,8 @@ def compare_cards(card1, card2, trump, suit_to_follow):
     
     elif card1.suit == card2.suit != (trump or suit_to_follow):
         raise ValueError("Can't compare cards that aren't trump and are wrong suit")
-        return None
     
-def get_best_card(array_of_cards, trump):
+def get_best_card(array_of_cards: List[Card], trump: str) -> Card:
     """
     Returns the most powerful card
     """
@@ -70,3 +75,32 @@ def get_best_card(array_of_cards, trump):
                                      trump, suit_to_follow)
     return card_to_beat
     
+def clear_screen() -> None:
+    os.system('cls||clear')
+    
+def get_yes_no(question: str) -> bool:
+    answer = input(question)
+    if "Y" in answer.upper() or "TRUE" in answer.upper():
+        return True
+    elif "N" in answer.upper() or "FALSE" in answer.upper():
+        return False
+    else:
+        print("Invalid input; this is a yes or no question. Try again")
+        get_yes_no(question)
+
+def get_answer_no(question: str, regex: str) -> str:
+    """
+    the user enters either an answer, or No
+    @param regex es just the regex for the options, leave the 'no' up to this function
+    @returns empty string, or whatever the user entered that matched the regex (as a string)
+    dynamically typed is OP
+    """
+    answer = input(question)
+    match = re.search(regex, answer.lower())
+    if "NO" in answer.upper() or "FALSE" in answer.upper():
+        return ""
+    elif match:
+        return match.group(0)
+    else:
+        print("Sorry, your answer isn't valid. Please try again.")
+        get_answer_no(question, regex)
